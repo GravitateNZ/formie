@@ -99,6 +99,7 @@ class HubSpot extends Crm
             }
 
             // Special handling for dates for HubSpot
+            /* This is causing weird issues with dates in nested forms, adding this until I can work out what is going on
             if ($event->integrationField->getType() === IntegrationField::TYPE_DATE) {
                 // HubSpot needs this as a timestamp value.
                 if ($event->rawValue instanceof DateTime) {
@@ -110,7 +111,7 @@ class HubSpot extends Crm
                     // Always return the raw value for all other instances. We might be passing in the timestamp
                     $event->value = $event->rawValue;
                 }
-            }
+            } */
         });
     }
 
