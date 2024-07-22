@@ -13,6 +13,7 @@ use verbb\formie\models\Phone as PhoneModel;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -22,7 +23,7 @@ use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\db\Schema;
 
-class Phone extends FormField implements SubfieldInterface, PreviewableFieldInterface
+class Phone extends FormField implements SubfieldInterface, PreviewableFieldInterface, SortableFieldInterface
 {
     // Traits
     // =========================================================================
@@ -86,6 +87,11 @@ class Phone extends FormField implements SubfieldInterface, PreviewableFieldInte
             return Schema::TYPE_TEXT;
         }
 
+        // Content encryption can make field content quite large
+        if ($this->enableContentEncryption) {
+            return Schema::TYPE_TEXT;
+        }
+
         return Schema::TYPE_STRING;
     }
 
@@ -134,6 +140,12 @@ class Phone extends FormField implements SubfieldInterface, PreviewableFieldInte
         }
 
         return parent::serializeValue($value, $element);
+    }
+
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        // Ensure that we're checking the string representation of a number's "empty" state
+        return (string)$value === '';
     }
 
     public function getFrontEndJsModules(): ?array
@@ -211,7 +223,7 @@ class Phone extends FormField implements SubfieldInterface, PreviewableFieldInte
             $errorMessage = $this->errorMessage ?? '"{label}" cannot be blank.';
 
             if (StringHelper::isBlank((string)$value->number)) {
-                $element->addError($this->handle, Craft::t('formie', $errorMessage, [
+                $element->addError($this->handle . '.number', Craft::t('formie', $errorMessage, [
                     'label' => $this->name,
                 ]));
             }

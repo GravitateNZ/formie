@@ -36,6 +36,8 @@ use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\validators\HandleValidator;
 
+use yii\db\Schema;
+
 use GraphQL\Type\Definition\Type;
 
 use Twig\Markup;
@@ -163,6 +165,16 @@ trait FormFieldTrait
     public function getValue(ElementInterface $element): mixed
     {
         return $element->getFieldValue($this->handle);
+    }
+
+    public function getContentColumnType(): string
+    {
+        // Content encryption can make field content quite large
+        if ($this->enableContentEncryption) {
+            return Schema::TYPE_TEXT;
+        }
+        
+        return parent::getContentColumnType();
     }
 
     /**
@@ -647,6 +659,7 @@ trait FormFieldTrait
         $defaults = [
             'labelPosition' => '',
             'instructionsPosition' => '',
+            'includeInEmail' => true,
         ];
 
         // Combine any class-specified defaults
@@ -724,6 +737,10 @@ trait FormFieldTrait
         ]);
 
         $this->trigger(static::EVENT_MODIFY_DEFAULT_VALUE, $event);
+
+        if (is_string($event->value)) {
+            $event->value = trim($event->value);
+        }
 
         return $event->value;
     }
@@ -1643,7 +1660,7 @@ trait FormFieldTrait
     private static function _getReservedWords(): array
     {
         $reservedWords = [
-            ['form', 'field', 'submission'],
+            ['form', 'field', 'submission', 'status'],
         ];
 
         try {

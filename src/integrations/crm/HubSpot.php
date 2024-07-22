@@ -99,6 +99,7 @@ class HubSpot extends Crm
             }
 
             // Special handling for dates for HubSpot
+            /* This is causing weird issues with dates in nested forms, adding this until I can work out what is going on
             if ($event->integrationField->getType() === IntegrationField::TYPE_DATE) {
                 // HubSpot needs this as a timestamp value.
                 if ($event->rawValue instanceof DateTime) {
@@ -110,7 +111,7 @@ class HubSpot extends Crm
                     // Always return the raw value for all other instances. We might be passing in the timestamp
                     $event->value = $event->rawValue;
                 }
-            }
+            } */
         });
     }
 
@@ -348,6 +349,62 @@ class HubSpot extends Crm
                 }
             }
 
+            if ($this->mapToCompany) {
+                $companyPayload = [
+                    'properties' => $companyValues,
+                ];
+
+                $companyName = $companyValues['name'] ?? null;
+
+                // Company Name is required to match against
+                if (!$companyName) {
+                    Integration::error($this, Craft::t('formie', 'Invalid companyName'), true);
+
+                    return false;
+                }
+
+                // Find existing company
+                $response = $this->request('POST', 'crm/v3/objects/companies/search', [
+                    'json' => [
+                        'filterGroups' => [
+                            [
+                                'filters' => [
+                                    [
+                                        'operator' => 'EQ',
+                                        'propertyName' => 'name',
+                                        'value' => $companyName,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]);
+
+                $existingCompanyId = $response['results'][0]['id'] ?? '';
+
+                // Update or create
+                if ($existingCompanyId) {
+                    $response = $this->deliverPayload($submission, "crm/v3/objects/companies/{$existingCompanyId}", $companyPayload, 'PATCH');
+                } else {
+                    $response = $this->deliverPayload($submission, 'crm/v3/objects/companies', $companyPayload);
+                }
+
+                if ($response === false) {
+                    return true;
+                }
+
+                $companyId = $response['id'] ?? '';
+
+                if (!$companyId) {
+                    Integration::error($this, Craft::t('formie', 'Missing return “companyId” {response}. Sent payload {payload}', [
+                        'response' => Json::encode($response),
+                        'payload' => Json::encode($companyPayload),
+                    ]), true);
+
+                    return false;
+                }
+            }
+
             if ($this->mapToForm) {
                 // Prepare the payload for HubSpot, required for v1 API
                 $formPayload = [];
@@ -547,6 +604,7 @@ class HubSpot extends Crm
                 'handle' => $field['name'],
                 'name' => $field['label'],
                 'type' => $this->_convertFieldType($field['fieldType']),
+                'sourceType' => $field['fieldType'],
                 'options' => $options,
             ]);
         }

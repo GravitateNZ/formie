@@ -1,5 +1,74 @@
 # Changelog
 
+## 2.1.22 - 2024-07-21
+
+### Changed
+- Address and Multi-Name fields now strip out invalid content in email notifications.
+
+### Fixed
+- Fix Salesforce integration and Case objects by excluding the `IsClosedOnCreate` field.
+
+## 2.1.21 - 2024-07-16
+
+### Added
+- Added structure sorting options to Entries fields.
+- Added `allIntegrations` property to `EVENT_MODIFY_FORM_INTEGRATIONS` event.
+- Added `form` property to `EVENT_MODIFY_FORM_INTEGRATIONS` event.
+- Added `setNoCacheHeaders()` to the `formie/forms/refresh-tokens` action endpoint to prevent caching.
+- Added `Integrations::EVENT_MODIFY_FORM_INTEGRATION` event.
+
+### Changed
+- Allow sending email notifications for incomplete submissions from the control panel.
+- `status` is now a reserved field handle.
+- Updated form builder preview for Summary field.
+
+### Fixed
+- Fixed an error with Date fields and their default value timezone.
+- Fixed an XSS vulnerability for sub-fields and sent email notifications.
+- Fixed `EVENT_MODIFY_FORM_INTEGRATION` not firing in some instances.
+- Fixed Phone field allowing invalid phone numbers and country codes.
+- Fixed an error with single Name fields used in Summary fields.
+- Fixed session call for `refresh-tokens`.
+- Fixed Opayo payments and custom email values.
+- Fixed some fields not using `getValueAsString()` to render content for email notifications.
+- Fixed single-value fields not being able to be ordered in the submissions index in the control panel.
+- Fixed lack of server-side validation for min/max Number fields.
+
+## 2.1.20 - 2024-06-27
+
+### Added
+- Added `sourceType` for all integration custom fields to check against the provider-defined field type.
+- Added Company mapping support for HubSpot CRM integration.
+
+### Changed
+- Changed the default state of “Include in Email Notifications” for fields to be `true`.
+
+### Fixed
+- Fixed an error with some fields when enabling content encryption.
+- Fixed Pipedrive integration for "Multiple Options" (set) fields.
+- Fixed server-side validation for Phone fields on Ajax-based forms not showing correctly.
+- Fixed an error with Element integrations when mapping to an element select field type on the resulting element.
+- Fixed Phone field validation for empty state.
+- Fixed a typo in Turnstile appearance settings.
+- Fixed Address field country values not showing correctly when editing a submission in the control panel.
+- Fixed Name field Prefix not using the label for its content.
+- Fixed Name fields not using their full name value for Summary fields.
+
+## 2.1.19 - 2024-06-15
+
+### Added
+- Added support for new Klaviyo integrations due to [API changes](https://developers.klaviyo.com/en/v1-2/reference/api-overview).
+- Added support for Calculations field when used in field conditions.
+- Added appearance settings to Turnstile captcha. (thanks @jmauzyk).
+
+### Changed
+- Calculations fields can now reference other Calculations fields.
+- Improved handling of spam, deleted, and agent contacts for Freshdesk integration. (thanks @jmauzyk).
+
+### Fixed
+- Fixed default values for fields not being trimmed of whitespace.
+- Fixed some variables not supporting env variables in Email Notifications.
+
 ## 2.1.18 - 2024-05-31
 
 ### Fixed

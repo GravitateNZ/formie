@@ -284,6 +284,13 @@ class Variables
 
         $variables = Formie::$plugin->getRenderCache()->getVariables($cacheKey);
 
+        // Parse each variable on it's own to handle .env vars
+        foreach ($variables as $key => $variable) {
+            if (is_string($variable)) {
+                $variables[$key] = App::parseEnv($variable);
+            }
+        }
+
         // Try to parse submission + extra variables
         try {
             return Formie::$plugin->getTemplates()->renderObjectTemplate($value, $submission, $variables);
@@ -446,6 +453,16 @@ class Variables
                 $handle = "{$prefix}{$field->handle}.{$subfield['handle']}";
 
                 $values[$handle] = $submissionValue[$subfield['handle']] ?? '';
+
+                // Escape any HTML in field content for good measure
+                $values[$handle] = StringHelper::cleanString((string)$values[$handle]);
+
+                // Special handling for Prefix for a Name field. This can be removed in Formie 2
+                if ($field instanceof formfields\Name && $subfield['handle'] === 'prefix') {
+                    $prefixOptions = formfields\Name::getPrefixOptions();
+                    $prefixOption = ArrayHelper::firstWhere($prefixOptions, 'value', $values[$handle]);
+                    $values[$handle] = $prefixOption['label'] ?? '';
+                }
             }
         } else if ($field instanceof formfields\Group) {
             if ($submissionValue && $row = $submissionValue->one()) {

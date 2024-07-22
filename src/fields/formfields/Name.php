@@ -678,4 +678,13 @@ class Name extends FormField implements SubfieldInterface, PreviewableFieldInter
         return $value;
     }
 
+    protected function defineValueForSummary($value, ElementInterface $element = null): string
+    {
+        if ($this->useMultipleFields) {
+            return $value ? $value->getFullName() : '';
+        }
+
+        return (string)$value;
+    }
+
 }

@@ -371,7 +371,7 @@ class FormsController extends Controller
     public function actionRefreshTokens(): Response
     {
         // Ensure that the session has started, just in case
-        Session::exists();
+        Craft::$app->getSession()->open();
 
         $params = [
             'csrf' => [
@@ -393,6 +393,9 @@ class FormsController extends Controller
                 $params['captchas'][$captcha->handle] = $jsVariables;
             }
         }
+
+        // Prevent the browser from caching the response
+        $this->response->setNoCacheHeaders();
 
         return $this->asJson($params);
     }
